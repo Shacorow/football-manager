@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet author="KorniienkoD" id="team_1">
+        <createTable tableName="TEAM">
+            <column name="ID" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="NAME" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="COMMISSION" type="DOUBLE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ACCOUNT" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="TEAM"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet author="KorniienkoD" id="team_2">
+        <createSequence sequenceName="TEAM_SEQ"/>
+        <rollback>
+            <dropSequence sequenceName="TEAM_SEQ"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="insert_team_1" author="KorniienkoD">
+        <insert tableName="TEAM">
+            <column name="NAME" value="Team A"/>
+            <column name="COMMISSION" value="5"/>
+            <column name="ACCOUNT" value="10000"/>
+        </insert>
+        <rollback>
+            <delete tableName="TEAM">
+                <where>NAME = 'Team A'</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="insert_team_2" author="KorniienkoD">
+        <insert tableName="TEAM">
+            <column name="NAME" value="Team B"/>
+            <column name="COMMISSION" value="7"/>
+            <column name="ACCOUNT" value="15000"/>
+        </insert>
+        <rollback>
+            <delete tableName="TEAM">
+                <where>NAME = 'Team B'</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+    <changeSet author="KorniienkoD" id="update_seq_team">
+        <sql>
+            SELECT setval('TEAM_SEQ', (SELECT MAX(ID) FROM TEAM));
+        </sql>
+    </changeSet>
+</databaseChangeLog>

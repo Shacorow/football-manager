@@ -1,0 +1,81 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.10.xsd">
+
+    <changeSet id="player_1" author="KorniienkoD">
+        <createTable tableName="PLAYER">
+            <column name="ID" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="NAME" type="VARCHAR(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="SURNAME" type="VARCHAR(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="AGE" type="INT">
+                <constraints nullable="false" />
+            </column>
+            <column name="EXPERIENCE" type="INT">
+                <constraints nullable="false" />
+            </column>
+            <column name="TEAM_ID" type="BIGINT">
+                <constraints nullable="true" />
+            </column>
+        </createTable>
+        <rollback>
+            <dropTable tableName="PLAYER" />
+        </rollback>
+    </changeSet>
+    <changeSet author="KorniienkoD" id="player_2">
+        <addForeignKeyConstraint baseTableName="PLAYER" baseColumnNames="TEAM_ID"
+                                 constraintName="FK_PLAYER2TEAM" referencedTableName="TEAM"
+                                 referencedColumnNames="ID" />
+    </changeSet>
+
+    <changeSet author="KorniienkoD" id="player_3">
+        <createSequence sequenceName="PLAYER_SEQ" />
+        <rollback>
+            <dropSequence sequenceName="PLAYER_SEQ" />
+        </rollback>
+    </changeSet>
+
+    <changeSet id="player_insert_1" author="KorniienkoD">
+        <insert tableName="PLAYER">
+            <column name="ID" value="1" />
+            <column name="NAME" value="John" />
+            <column name="SURNAME" value="Doe" />
+            <column name="AGE" value="25" />
+            <column name="EXPERIENCE" value="3" />
+            <column name="TEAM_ID" value="1" />
+        </insert>
+    </changeSet>
+    <changeSet id="player_insert_2" author="KorniienkoD">
+        <insert tableName="PLAYER">
+            <column name="ID" value="2" />
+            <column name="NAME" value="Jane" />
+            <column name="SURNAME" value="Smith" />
+            <column name="AGE" value="28" />
+            <column name="EXPERIENCE" value="5" />
+            <column name="TEAM_ID" value="1" />
+        </insert>
+    </changeSet>
+    <changeSet id="player_insert_3" author="KorniienkoD">
+        <insert tableName="PLAYER">
+            <column name="ID" value="3" />
+            <column name="NAME" value="Sam" />
+            <column name="SURNAME" value="Brown" />
+            <column name="AGE" value="22" />
+            <column name="EXPERIENCE" value="2" />
+            <column name="TEAM_ID" value="2" />
+        </insert>
+    </changeSet>
+
+    <changeSet author="KorniienkoD" id="update_seq_player">
+        <sql>
+            SELECT setval('PLAYER_SEQ', (SELECT MAX(ID) FROM PLAYER));
+        </sql>
+    </changeSet>
+</databaseChangeLog>
