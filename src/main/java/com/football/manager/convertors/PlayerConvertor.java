@@ -11,15 +11,17 @@ public class PlayerConvertor {
         destination.setId(source.getId());
         destination.setName(source.getName());
         destination.setSurname(source.getSurname());
-        destination.setAge(source.getAge());
-        destination.setExperience(source.getExperience());
+        destination.setBirthDate(source.getBirthDate());
+        destination.setStartDate(source.getStartDate());
+        destination.setEndDate(source.getEndDate());
     }
 
     public void toDTO(Player source, PlayerDTO destination) {
         destination.setId(source.getId());
         destination.setName(source.getName());
         destination.setSurname(source.getSurname());
-        destination.setAge(source.getAge());
-        destination.setExperience(source.getExperience());
+        destination.setBirthDate(source.getBirthDate());
+        destination.setStartDate(source.getStartDate());
+        destination.setEndDate(source.getEndDate());
     }
 }

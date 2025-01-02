@@ -42,14 +42,7 @@ public class PlayerController {
 
     @DeleteMapping("/{id}")
     public String delete(@PathVariable(value = "id") Long id) {
-        return playerService.delete(id);
-    }
-
-    @PatchMapping("/{id}/experience/{experience}")
-    public PlayerDTO addExperience(@PathVariable(value = "id") Long id, @PathVariable(value = "experience") Integer experience) {
-        PlayerDTO playerDTO = new PlayerDTO();
-        Player player = playerService.addExperience(id, experience);
-        playerConvertor.toDTO(player, playerDTO);
-        return playerDTO;
+        playerService.delete(id);
+        return "Player successfully deleted!";
     }
 }

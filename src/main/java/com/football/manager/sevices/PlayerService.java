@@ -1,12 +1,14 @@
 package com.football.manager.sevices;
 
 import com.football.manager.dto.PlayerDTO;
+import com.football.manager.exceptions.PlayerDoesNotExistException;
 import com.football.manager.models.Player;
 import com.football.manager.models.Team;
-import com.football.manager.exceptions.PlayerDoesNotExistException;
 import com.football.manager.repositories.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -16,26 +18,34 @@ public class PlayerService {
 
     public Player create(PlayerDTO playerDTO) {
         Player player = new Player();
-        player.setExperience(0);
+        if (playerDTO.getStartDate() != null) {
+            player.setStartDate(playerDTO.getStartDate());
+        } else {
+            player.setStartDate(new Date());
+        }
         player.setName(playerDTO.getName());
-        player.setAge(playerDTO.getAge());
+        player.setBirthDate(playerDTO.getBirthDate());
         player.setSurname(playerDTO.getSurname());
         player = playerRepository.save(player);
         return player;
     }
 
     public Player getById(Long id) {
-        return playerRepository.findById(id).orElseThrow(() -> new PlayerDoesNotExistException(id));
+        Player player = playerRepository.findById(id).orElseThrow(() -> new PlayerDoesNotExistException(id));
+        if (player.getEndDate() != null) throw new PlayerDoesNotExistException(id);
+        return player;
     }
 
-    public String delete(Long id) {
+    public void delete(Long id) {
         Player player = playerRepository.findById(id).orElseThrow(() -> new PlayerDoesNotExistException(id));
-        playerRepository.delete(player);
-        return "Player successfully deleted!";
+        if (player.getEndDate() != null) throw new PlayerDoesNotExistException(id);
+        player.setEndDate(new Date());
+        playerRepository.save(player);
     }
 
     public Player update(Long id, Player updatedPlayer) {
         Player player = playerRepository.findById(id).orElseThrow(() -> new PlayerDoesNotExistException(id));
+        if (player.getEndDate() != null) throw new PlayerDoesNotExistException(id);
 
         if (updatedPlayer.getName() != null) {
             player.setName(updatedPlayer.getName());
@@ -43,22 +53,13 @@ public class PlayerService {
         if (updatedPlayer.getSurname() != null) {
             player.setSurname(updatedPlayer.getSurname());
         }
-        if (updatedPlayer.getAge() != null) {
-            player.setAge(updatedPlayer.getAge());
-        }
         return playerRepository.save(player);
     }
 
-    public Player addExperience(Long id, Integer experience) {
-        Player player = playerRepository.findById(id).orElseThrow(() -> new PlayerDoesNotExistException(id));
-        player.setExperience(player.getExperience() + experience);
-        return playerRepository.save(player);
-    }
-
-    public Player clearTeam(Long id) {
+    public void clearTeam(Long id) {
         Player player = playerRepository.findById(id).orElseThrow(() -> new PlayerDoesNotExistException(id));
         player.setTeam(null);
-        return playerRepository.save(player);
+        playerRepository.save(player);
     }
 
     public Player changeTeam(Long id, Team team) {

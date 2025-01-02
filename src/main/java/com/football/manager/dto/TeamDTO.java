@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -16,7 +17,9 @@ public class TeamDTO {
 
     private int commission;
 
-    private double account;
+    private double budget;
+
+    private Date endDate;
 
     private List<PlayerDTO> players = new ArrayList<>();
 }

@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Date;
+
 @Getter
 @Setter
 @Entity(name = "PLAYER")
@@ -21,11 +23,14 @@ public class Player {
     @Column(name = "SURNAME")
     private String surname;
 
-    @Column(name = "AGE")
-    private Integer age;
+    @Column(name = "BIRTH_DATE")
+    private Date birthDate;
 
-    @Column(name = "EXPERIENCE")
-    private Integer experience;
+    @Column(name = "START_DATE")
+    private Date startDate;
+
+    @Column(name = "END_DATE")
+    private Date endDate;
 
     @ManyToOne
     @JoinColumn(name = "TEAM_ID", nullable = true)

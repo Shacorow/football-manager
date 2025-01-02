@@ -3,6 +3,8 @@ package com.football.manager.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Date;
+
 @Getter
 @Setter
 public class PlayerDTO {
@@ -13,7 +15,9 @@ public class PlayerDTO {
 
     private String surname;
 
-    private int age;
+    private Date birthDate;
 
-    private int experience;
+    private Date startDate;
+
+    private Date endDate;
 }

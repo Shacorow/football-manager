@@ -42,16 +42,17 @@ public class TeamController {
 
     @DeleteMapping("/{id}")
     public String delete(@PathVariable(value = "id") Long id) {
-        return teamService.delete(id);
+        teamService.delete(id);
+        return "Team successfully deleted!";
     }
 
-    @PatchMapping("/{firstTeamId}/transfer/{secondTeamId}/player/{playerId}")
-    public String transferPlayer(@PathVariable(value = "firstTeamId") Long firstTeamId, @PathVariable(value = "secondTeamId") Long secondTeamId, @PathVariable(value = "playerId") Long playerId) {
-        return teamService.transferPlayer(firstTeamId, secondTeamId, playerId);
+    @PatchMapping("/{teamId}/transfer/{playerId}")
+    public void transferPlayer(@PathVariable(value = "teamId") Long teamId, @PathVariable(value = "playerId") Long playerId) {
+        teamService.transferPlayer(teamId, playerId);
     }
 
-    @PatchMapping("/{teamId}/player/{playerId}")
-    public String addPlayerToTeam(@PathVariable(value = "teamId") Long firstTeamId, @PathVariable(value = "playerId") Long playerId) {
-        return teamService.addPlayerToTeam(firstTeamId, playerId);
+    @PatchMapping("/{teamId}/hire/{playerId}")
+    public void addPlayerToTeam(@PathVariable(value = "teamId") Long firstTeamId, @PathVariable(value = "playerId") Long playerId) {
+        teamService.addPlayerToTeam(firstTeamId, playerId);
     }
 }

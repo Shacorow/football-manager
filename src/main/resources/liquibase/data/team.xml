@@ -13,11 +13,14 @@
             <column name="NAME" type="VARCHAR(255)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="COMMISSION" type="DOUBLE">
+            <column name="COMMISSION" type="INT">
                 <constraints nullable="false"/>
             </column>
-            <column name="ACCOUNT" type="INT">
+            <column name="BUDGET" type="DOUBLE">
                 <constraints nullable="false"/>
+            </column>
+            <column name="END_DATE" type="DATE">
+                <constraints nullable="true"/>
             </column>
         </createTable>
         <rollback>
@@ -36,7 +39,7 @@
         <insert tableName="TEAM">
             <column name="NAME" value="Team A"/>
             <column name="COMMISSION" value="5"/>
-            <column name="ACCOUNT" value="10000"/>
+            <column name="BUDGET" value="10000"/>
         </insert>
         <rollback>
             <delete tableName="TEAM">
@@ -49,7 +52,7 @@
         <insert tableName="TEAM">
             <column name="NAME" value="Team B"/>
             <column name="COMMISSION" value="7"/>
-            <column name="ACCOUNT" value="15000"/>
+            <column name="BUDGET" value="15000"/>
         </insert>
         <rollback>
             <delete tableName="TEAM">

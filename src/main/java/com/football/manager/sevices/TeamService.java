@@ -1,18 +1,21 @@
 package com.football.manager.sevices;
 
 import com.football.manager.dto.TeamDTO;
-import com.football.manager.models.Player;
-import com.football.manager.models.Team;
+import com.football.manager.exceptions.BudgetExceedException;
 import com.football.manager.exceptions.TeamAlreadyExistException;
-import com.football.manager.exceptions.TeamDoesNotHaveEnoughMoneyToTransferException;
 import com.football.manager.exceptions.TeamNotExistException;
 import com.football.manager.exceptions.WrongCommissionException;
+import com.football.manager.models.Player;
+import com.football.manager.models.Team;
 import com.football.manager.repositories.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Period;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Objects;
 
@@ -27,7 +30,7 @@ public class TeamService {
 
     public Team create(TeamDTO teamDTO) {
         Team team = teamRepository.getByName(teamDTO.getName());
-        if (team == null) {
+        if (team == null || (team.getEndDate() != null && team.getEndDate().before(new Date()))) {
             team = new Team();
         } else {
             throw new TeamAlreadyExistException(teamDTO.getName());
@@ -37,29 +40,32 @@ public class TeamService {
             throw new WrongCommissionException();
         }
         team.setCommission(teamDTO.getCommission());
-        team.setAccount(teamDTO.getAccount());
+        team.setBudget(teamDTO.getBudget());
         team = teamRepository.save(team);
         return team;
     }
 
     public Team getById(Long id) {
-        return teamRepository.findById(id).orElseThrow(() -> new TeamNotExistException(id));
+        Team team = teamRepository.findById(id).orElseThrow(() -> new TeamNotExistException(id));
+        if (team.getEndDate() != null) throw new TeamNotExistException(id);
+        return team;
     }
 
-    public String delete(Long id) {
+    public void delete(Long id) {
         Team team = teamRepository.findById(id).orElseThrow(() -> new TeamNotExistException(id));
-        for(Player player : team.getPlayers()){
+        if (team.getEndDate() != null) throw new TeamNotExistException(id);
+
+        for (Player player : team.getPlayers()) {
             playerService.clearTeam(player.getId());
         }
         team.setPlayers(null);
+        team.setEndDate(new Date());
         teamRepository.save(team);
-        teamRepository.delete(team);
-        return "Team successfully deleted!";
     }
 
     public Team update(Long id, Team updatedTeam) {
         Team team = teamRepository.findById(id).orElseThrow(() -> new TeamNotExistException(id));
-
+        if (team.getEndDate() != null) throw new TeamNotExistException(id);
         if (updatedTeam.getName() != null) {
             if (teamRepository.getByName(updatedTeam.getName()) == null) {
                 team.setName(updatedTeam.getName());
@@ -67,8 +73,8 @@ public class TeamService {
                 throw new TeamAlreadyExistException(updatedTeam.getName());
             }
         }
-        if (updatedTeam.getAccount() != null) {
-            team.setAccount(updatedTeam.getAccount());
+        if (updatedTeam.getBudget() != null) {
+            team.setBudget(updatedTeam.getBudget());
         }
         if (updatedTeam.getCommission() != null) {
             team.setCommission(updatedTeam.getCommission());
@@ -76,25 +82,41 @@ public class TeamService {
         return teamRepository.save(team);
     }
 
-    public String addPlayerToTeam(Long teamId, Long playerId) {
+    public void addPlayerToTeam(Long teamId, Long playerId) {
         Team team = teamRepository.findById(teamId).orElseThrow(() -> new TeamNotExistException(teamId));
+        if (team.getEndDate() != null) throw new TeamNotExistException(teamId);
         Player player = playerService.getById(playerId);
         if (player.getTeam() != null) {
-            return transferPlayer(player.getTeam().getId(), teamId, playerId);
+            transferPlayer(teamId, playerId);
         } else {
             player = playerService.changeTeam(playerId, team);
             team.getPlayers().add(player);
             teamRepository.save(team);
         }
-        return "Player add to team";
     }
 
+    private Period getDateDiff(Date start, Date end) {
+        return Period.between(start.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate(), end.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate());
+    }
 
-    public String transferPlayer(Long firstTeamId, Long secondTeamId, Long playerId) {
-        Team fromTransfer = teamRepository.findById(firstTeamId).orElseThrow(() -> new TeamNotExistException(firstTeamId));
-        Team toTransfer = teamRepository.findById(secondTeamId).orElseThrow(() -> new TeamNotExistException(secondTeamId));
+    public void transferPlayer(Long teamId, Long playerId) {
         Player player = playerService.getById(playerId);
-        double varietyOfTransfer = (double) (player.getExperience() * 100000) / player.getAge();
+        if (player.getTeam() == null) {
+            addPlayerToTeam(teamId, playerId);
+        }
+        Player finalPlayer = player;
+        Team fromTransfer = teamRepository.findById(player.getTeam().getId()).orElseThrow(() -> new TeamNotExistException(finalPlayer.getTeam().getId()));
+        if (fromTransfer.getEndDate() != null) throw new TeamNotExistException(finalPlayer.getTeam().getId());
+        Team toTransfer = teamRepository.findById(teamId).orElseThrow(() -> new TeamNotExistException(teamId));
+        if (toTransfer.getEndDate() != null) throw new TeamNotExistException(teamId);
+        Period careerPeriod = getDateDiff(player.getStartDate(), new Date());
+        int experience = careerPeriod.getMonths() + (careerPeriod.getYears() * 12);
+        Period agePeriod = getDateDiff(player.getBirthDate(), new Date());
+        double varietyOfTransfer = (double) (experience * 100000) / agePeriod.getYears();
 
         double fullPrice = varietyOfTransfer + (double) (varietyOfTransfer * (fromTransfer.getCommission() / 100.0));
 
@@ -102,11 +124,9 @@ public class TeamService {
 
         fullPrice = fullPriceRounded.doubleValue();
 
-        if (toTransfer.getAccount() < fullPrice) {
-            throw new TeamDoesNotHaveEnoughMoneyToTransferException(toTransfer.getName());
-        }
-        toTransfer.setAccount(toTransfer.getAccount() - fullPrice);
-        fromTransfer.setAccount(fromTransfer.getAccount() + fullPrice);
+        if (toTransfer.getBudget() < fullPrice) throw new BudgetExceedException(toTransfer.getName());
+        toTransfer.setBudget(toTransfer.getBudget() - fullPrice);
+        fromTransfer.setBudget(fromTransfer.getBudget() + fullPrice);
         player = playerService.changeTeam(playerId, toTransfer);
         Iterator<Player> iterator = fromTransfer.getPlayers().iterator();
         while (iterator.hasNext()) {
@@ -119,8 +139,5 @@ public class TeamService {
 
         teamRepository.save(toTransfer);
         teamRepository.save(fromTransfer);
-
-        return "Transfer player: " + player.getName() + " " + player.getSurname() + " was successfully transferred from team: "
-                + fromTransfer.getName() + " to team: " + toTransfer.getName();
     }
 }

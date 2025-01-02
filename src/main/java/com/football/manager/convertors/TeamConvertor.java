@@ -19,7 +19,7 @@ public class TeamConvertor {
     public void fromDTO(TeamDTO source, Team destination) {
         destination.setId(source.getId());
         destination.setName(source.getName());
-        destination.setAccount(source.getAccount());
+        destination.setBudget(source.getBudget());
         destination.setCommission(source.getCommission());
         List<Player> players = new ArrayList<>();
         for (PlayerDTO playerDTO : source.getPlayers()) {
@@ -33,7 +33,7 @@ public class TeamConvertor {
     public void toDTO(Team source, TeamDTO destination) {
         destination.setId(source.getId());
         destination.setName(source.getName());
-        destination.setAccount(source.getAccount());
+        destination.setBudget(source.getBudget());
         destination.setCommission(source.getCommission());
         List<PlayerDTO> players = new ArrayList<>();
         for (Player player : source.getPlayers()) {

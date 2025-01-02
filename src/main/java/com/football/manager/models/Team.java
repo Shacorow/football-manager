@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -24,8 +25,11 @@ public class Team {
     @Column(name = "COMMISSION")
     private Integer commission;
 
-    @Column(name = "ACCOUNT", precision = 10, scale = 3)
-    private Double account;
+    @Column(name = "BUDGET", precision = 10, scale = 3)
+    private Double budget;
+
+    @Column(name = "END_DATE")
+    private Date endDate;
 
     @OneToMany(mappedBy = "team")
     private List<Player> players = new ArrayList<>();
