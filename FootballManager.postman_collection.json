@@ -78,7 +78,7 @@
 					"response": []
 				},
 				{
-					"name": "Add new player to team",
+					"name": "Hire player to team",
 					"request": {
 						"method": "PATCH",
 						"header": [],
@@ -204,29 +204,6 @@
 							"path": [
 								"api",
 								"player",
-								"1"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Add Experience",
-					"request": {
-						"method": "PATCH",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/player/4/experience/1",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"player",
-								"4",
-								"experience",
 								"1"
 							]
 						}

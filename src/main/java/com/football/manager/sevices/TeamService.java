@@ -107,37 +107,30 @@ public class TeamService {
         Player player = playerService.getById(playerId);
         if (player.getTeam() == null) {
             addPlayerToTeam(teamId, playerId);
+            return;
         }
-        Player finalPlayer = player;
-        Team fromTransfer = teamRepository.findById(player.getTeam().getId()).orElseThrow(() -> new TeamNotExistException(finalPlayer.getTeam().getId()));
-        if (fromTransfer.getEndDate() != null) throw new TeamNotExistException(finalPlayer.getTeam().getId());
-        Team toTransfer = teamRepository.findById(teamId).orElseThrow(() -> new TeamNotExistException(teamId));
-        if (toTransfer.getEndDate() != null) throw new TeamNotExistException(teamId);
+        Long prevTeamId = player.getTeam().getId();
+        Team transferFrom = teamRepository.findById(prevTeamId).orElseThrow(() -> new TeamNotExistException(prevTeamId));
+        if (transferFrom.getEndDate() != null) throw new TeamNotExistException(player.getTeam().getId());
+        Team transferTo = teamRepository.findById(teamId).orElseThrow(() -> new TeamNotExistException(teamId));
+        if (transferTo.getEndDate() != null) throw new TeamNotExistException(teamId);
         Period careerPeriod = getDateDiff(player.getStartDate(), new Date());
         int experience = careerPeriod.getMonths() + (careerPeriod.getYears() * 12);
         Period agePeriod = getDateDiff(player.getBirthDate(), new Date());
         double varietyOfTransfer = (double) (experience * 100000) / agePeriod.getYears();
 
-        double fullPrice = varietyOfTransfer + (double) (varietyOfTransfer * (fromTransfer.getCommission() / 100.0));
+        double fullPrice = varietyOfTransfer + (double) (varietyOfTransfer * (transferFrom.getCommission() / 100.0));
 
         BigDecimal fullPriceRounded = new BigDecimal(fullPrice).setScale(3, RoundingMode.HALF_UP);
 
         fullPrice = fullPriceRounded.doubleValue();
 
-        if (toTransfer.getBudget() < fullPrice) throw new BudgetExceedException(toTransfer.getName());
-        toTransfer.setBudget(toTransfer.getBudget() - fullPrice);
-        fromTransfer.setBudget(fromTransfer.getBudget() + fullPrice);
-        player = playerService.changeTeam(playerId, toTransfer);
-        Iterator<Player> iterator = fromTransfer.getPlayers().iterator();
-        while (iterator.hasNext()) {
-            Player playerDelete = iterator.next();
-            if (Objects.equals(playerDelete.getId(), playerId)) {
-                iterator.remove();
-            }
-        }
-        toTransfer.getPlayers().add(player);
-
-        teamRepository.save(toTransfer);
-        teamRepository.save(fromTransfer);
+        if (transferTo.getBudget() < fullPrice) throw new BudgetExceedException(transferTo.getName());
+        transferTo.setBudget(transferTo.getBudget() - fullPrice);
+        transferFrom.setBudget(transferFrom.getBudget() + fullPrice);
+        player = playerService.changeTeam(playerId, transferTo);
+        transferTo.getPlayers().add(player);
+        teamRepository.save(transferTo);
+        teamRepository.save(transferFrom);
     }
 }
